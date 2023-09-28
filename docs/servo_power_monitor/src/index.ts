@@ -55,6 +55,8 @@ function updateGraph(data: Array<Array<Date|number>>) {
 }
 
 let inProgress = false;
+
+// update graph after parsing & adding data to powerData list 
 function pushOutput(s: string) {
   output += s
 
@@ -74,6 +76,7 @@ function pushOutput(s: string) {
   }
 }
 
+// send command 'ina 0' to servo asynchronously while halt is False
 function kickWriteLoop(writeFn: (s: string) => Promise<void>) {
   const f = async (_: any) => {
     while (!halt) {
@@ -92,6 +95,8 @@ function kickWriteLoop(writeFn: (s: string) => Promise<void>) {
   };
   setTimeout(f, intervalMs);
 }
+
+// read data from serve asynchronously while halt is False and add the data
 async function readLoop(readFn: () => Promise<string>) {
   while (!halt) {
     const s = await readFn();
