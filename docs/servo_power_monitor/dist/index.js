@@ -68411,6 +68411,7 @@ function setupStartUSBButton() {
 setupStartUSBButton();
 requestSerialButton.addEventListener('click', () => {
     halt = false;
+    requestSerialButton.disabled = true;
     navigator.serial
         .requestPort({ filters: [{ usbVendorId: 0x18d1, usbProductId: 0x520d }] })
         .then((port) => __awaiter(void 0, void 0, void 0, function* () {

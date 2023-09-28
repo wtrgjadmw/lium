@@ -173,6 +173,7 @@ setupStartUSBButton();
 
 requestSerialButton.addEventListener('click', () => {
   halt = false;
+  requestSerialButton.disabled = true;
   navigator.serial
       .requestPort({filters: [{usbVendorId: 0x18d1, usbProductId: 0x520d}]})
       .then(async (port) => {
@@ -227,6 +228,7 @@ let haltButton = document.getElementById('haltButton') as HTMLButtonElement;
 haltButton.addEventListener('click', () => {
   halt = true;
   requestUSBButton.disabled = false;
+  
   requestSerialButton.disabled = false;
 });
 
