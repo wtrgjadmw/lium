@@ -68293,6 +68293,7 @@ function updateGraph(data) {
     }, false);
 }
 let inProgress = false;
+// update graph after parsing & adding data to powerData list 
 function pushOutput(s) {
     output += s;
     let splitted = output.split('\n').filter((s) => s.trim().length > 10);
@@ -68310,6 +68311,7 @@ function pushOutput(s) {
         inProgress = false;
     }
 }
+// send command 'ina 0' to servo asynchronously while halt is False
 function kickWriteLoop(writeFn) {
     const f = (_) => __awaiter(this, void 0, void 0, function* () {
         while (!halt) {
@@ -68328,6 +68330,7 @@ function kickWriteLoop(writeFn) {
     });
     setTimeout(f, intervalMs);
 }
+// read data from serve asynchronously while halt is False and add the data
 function readLoop(readFn) {
     return __awaiter(this, void 0, void 0, function* () {
         while (!halt) {
