@@ -115,6 +115,7 @@ function setupStartUSBButton() {
     halt = false;
     device = null;
     requestUSBButton.disabled = true;
+    // access USB device
     try {
       device = await navigator.usb.requestDevice({
         filters: [{
@@ -173,6 +174,7 @@ setupStartUSBButton();
 
 requestSerialButton.addEventListener('click', () => {
   halt = false;
+  // open serial port
   navigator.serial
       .requestPort({filters: [{usbVendorId: 0x18d1, usbProductId: 0x520d}]})
       .then(async (port) => {
