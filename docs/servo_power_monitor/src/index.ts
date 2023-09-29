@@ -171,48 +171,48 @@ function setupStartUSBButton() {
 };
 setupStartUSBButton();
 
-requestSerialButton.addEventListener('click', () => {
+// var port: SerialPort;
+var port;
+var reader: ReadableStreamDefaultReader;
+
+requestSerialButton.addEventListener('click', async () => {
   halt = false;
   requestSerialButton.disabled = true;
-  navigator.serial
-      .requestPort({filters: [{usbVendorId: 0x18d1, usbProductId: 0x520d}]})
-      .then(async (port) => {
-        // Connect to `port` or add it to the list of available ports.
-        await port.open({baudRate: 115200});
-        const encoder = new TextEncoder();
-        const writer = port.writable.getWriter();
-        await writer.write(encoder.encode('help\n'));
-        writer.releaseLock();
+  port = await navigator.serial
+    .requestPort({filters: [{usbVendorId: 0x18d1, usbProductId: 0x520d}]})
+    .catch((e) => {
+      console.error(e);
+    });
+  await port.open({baudRate: 115200});
+  const encoder = new TextEncoder();
+  const writer = port.writable.getWriter();
+  await writer.write(encoder.encode('help\n'));
+  writer.releaseLock();
 
-        kickWriteLoop(async (s) => {
-          let data = new TextEncoder().encode(s);
-          const writer = port.writable.getWriter();
-          await writer.write(data);
-          writer.releaseLock();
-        })
-        readLoop(async () => {
-          const reader = port.readable.getReader();
-          try {
-            while (true) {
-              const {value, done} = await reader.read();
-              if (done) {
-                // |reader| has been canceled.
-                break;
-              }
-              return utf8decoder.decode(value);
-            }
-          } catch (error) {
-            console.error(error);
-            throw error;
-          } finally {
-            reader.releaseLock();
-          }
-        });
-      })
-      .catch((e) => {
-        // The user didn't select a port.
-        console.error(e);
-      });
+  kickWriteLoop(async (s) => {
+    let data = new TextEncoder().encode(s);
+    const writer = port.writable.getWriter();
+    await writer.write(data);
+    writer.releaseLock();
+  })
+  await readLoop(async () => {
+    reader = port.readable.getReader();
+    try {
+      while (true) {
+        const {value, done} = await reader.read();
+        if (done) {
+          // |reader| has been canceled.
+          break;
+        }
+        return utf8decoder.decode(value);
+      }
+    } catch (error) {
+      console.error(error);
+      throw error;
+    } finally {
+      reader.releaseLock();
+    }
+  });
 });
 
 downloadButton.addEventListener('click', async () => {
@@ -225,11 +225,15 @@ downloadButton.addEventListener('click', async () => {
 });
 
 let haltButton = document.getElementById('haltButton') as HTMLButtonElement;
-haltButton.addEventListener('click', () => {
+haltButton.addEventListener('click', async () => {
   halt = true;
   requestUSBButton.disabled = false;
-  
-  requestSerialButton.disabled = false;
+  if (requestSerialButton.disabled) {
+    requestSerialButton.disabled = false;
+    reader.cancel();
+    reader.releaseLock();
+    await port.close();
+  }
 });
 
 let ranges = [];
